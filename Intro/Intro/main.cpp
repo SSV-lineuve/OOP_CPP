@@ -115,7 +115,25 @@ public:
 	//friend Point operator+(const Point& left, const Point& right);
 	//friend ostream& operator<<(ostream& os, const Point& obj);
 
+	//Type cast operator
+
+	explicit operator int()const
+	{
+		return x/y; //просто дл€ примера
+	}
+	//explicit
+		operator double()const
+	{
+		return x/y; //просто дл€ примера
+	}
+		operator char()const
+		{
+			return x / y; //просто дл€ примера
+		}
+
+
 };
+
 
 Point operator+(const Point& left, const Point& right)
 {
@@ -161,6 +179,7 @@ istream& operator >>(istream& is, Point& obj)
 //#define CONSTRUCTORS_CHECK
 //#define ASSIGNMENT_CHECK
 //#define STREAMS
+#define TYPE_CONVERSIONS
 
 void main()
 {
@@ -237,18 +256,49 @@ cout << A.get_x() << tab << A.get_y() << endl;*/
 	cout << "¬ы ввели: " << A << endl;
 #endif // STREAMS
 
-	Point A(2, 3);
-	Point B(3 ,4);
-	/*if (A == B) cout << "“очки равны" << endl;
-	else cout << "“очки разные" << endl;*/
+	//Point A(2, 3);
+	//Point B(3 ,4);
+	///*if (A == B) cout << "“очки равны" << endl;
+	//else cout << "“очки разные" << endl;*/
 
-	cout << (A == B) << endl;
+	//cout << (A == B) << endl;
 
+	//cout << A << endl;
+	///*A.set_x(33);
+	//A.set_y(44);*/
+
+	//A(33, 44);
+	//cout << A << endl;
+
+#ifdef TYPE_CONVERSIONS
+	////€вное преобразование значени€ в char
+	//cout << (char)43 << endl; //C-like style
+	//cout << char(44) << endl; //Functional style  
+
+	////Ќе€вные преобразовани€
+	//int a = 2; //No conversion
+	//double b = 3.4; //No conversion
+	//cout << sizeof(a) << endl;
+	//cout << sizeof(b) << endl;
+	//cout << a * b << endl; //ќператор * не€вно преобразует переменную 'a' в тип double, чтобы вернуть тип double 
+
+	//double c = 4;	//ќт меньшего к большему
+	//int d = c;		//ќт большего к меньшему без потери данных (в данном случае)
+	//int e = 2.5;	//ќт большего к меньшему с потерей данных
+
+	Point A(1, 3);
 	cout << A << endl;
-	/*A.set_x(33);
-	A.set_y(44);*/
+	int a = (int)A;
+	cout << a << endl;
+	double b = (double)A;
+	cout << b << endl;
 
-	A(33, 44);
-	cout << A << endl;
+	Point B = 3;	//(Implicit) conversion from 'int' to 'Point'
+					//ѕреобразование значени€ '3' типа int в Point
+					//Ёто преобразование возможно благодар€ конструктору с одним параметром
+	cout << B << endl;
 
+
+#endif // TYPE_CONVERSIONS
 }
+
