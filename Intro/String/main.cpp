@@ -1,196 +1,253 @@
 ﻿#include<iostream>
 using namespace std;
-//#define DECIMAL
 
-#ifdef DECIMAL
-Fraction(double decimal)
-{
-	this->integer = decimal; //избавляемся от дробной части
-	this->numerator = (decimal - integer + 0.000000000001) * 1000000000; //0.000000000001 - оч. маленькое число, чтобы получилось 38.4000..., а не 38.3999... 
-	this->denominator = 1E9; //1 000 000 000 - кол-во разрядов в int, к-рые мы в полной мере можем использовать (INT_MAX 2 147 483 647)
-	//cout << a - integer << endl; //проверка
-	if (decimal - integer) //если в decimal есть дробная часть ((decimal - integer) приводится к большему, т.е. к double)
-	{
-		while (numerator % 10 == 0) //пока в дробной части последняя цифра - ноль
-		{
-			numerator /= 10;
-			denominator /= 10;
-		}
-	}
+#define delimiter "----------------------------------------------"
+//#define COPY_ELISION
+
+
+#ifdef COPY_ELISION
+//int n = 0;
+//
+//struct C {
+//	explicit C(int) {}
+//	C(const C&) { ++n; }  // the copy constructor has a visible side effect
+//};                      // it modifies an object with static storage duration
+//
+//int main() {
+//	C c1(42);      // direct-initialization, calls C::C(int)
+//	C c2 = C(42);  // copy-initialization, calls C::C(const C&)
+//
+//	std::cout << n << std::endl;  // prints 0 if the copy was elided, 1 otherwise
+//}
+struct C {
+	C() = default;
+	C(const C&) { std::cout << "A copy was made.\n"; }
+};
+
+C f() {
+	return C();
 }
-#endif // DECIMAL
+
+int main() {
+	std::cout << "Hello World!\n";
+	C obj = f();
+}
+#endif // COPY_ELISION
+
+
+class String;
+String operator+(const String& left, const String& right);
+
 class String
 {
-private:
-
-	char* str;
-	int length;
+	int size;  //Размер строки в Байтах
+	char* str; //Указатель на строку в динамической памяти
 
 public:
+
+	int get_size()const
+	{
+		return size;	}
+
 	
-	char* get_string()const
+	/* v возвращает константный указатель (нельзя изменить значение по адресу) */ 
+	const char* get_str()const//Показывает, что это константный метод
 	{
 		return str;
 	}
-	void set_string(const char* str)
+	char* get_str() //Показывает, что это константный метод
 	{
-		length = strlen(str);
-		this->str = new char[length + 1];
-
-		for (int i = 0; i < length; i++)
-		{
-			this->str[i] = str[i];
-		}
-
-		this->str[length] = 0;
+		return str;
 	}
 
-	String()
+	explicit String(int size = 80)
 	{
-		str = {};
-		length = 0;
+		this->size = size;
+		this->str = new char[size] {};
+		cout << (size == 80 ? "Default" : "Size") << "Constructor:\t" << this << endl;
 	}
-	
-	String(const char* str)
+	String(const char str[])
 	{
-		length = strlen(str);
-		
-		this->str = new char[length + 1];
-		
-		for (int i = 0; i < length; i++)
-		{
+		this->size = strlen(str) + 1;
+		this->str = new char[size]{};
+		for (int i = 0; str[i]; i++)
 			this->str[i] = str[i];
-		}
-		
-		this->str[length] = 0;
-
+		cout << "Constructor:\t\t" << this << endl;
+	}
+	String(const String& other)
+	{
+		this->size = other.size;
+		this->str = new char[size] {};
+		for (int i = 0; i<size; i++)
+			this->str[i] = other.str[i];
+		cout << "CopyConstructor:\t" << this << endl;
+	}
+	String(String&& other)
+	{
+		this->size = other.size;
+		this->str = other.str;
+		other.str = nullptr;  //Указатель на ноль (NULL pointer)
+		cout << "MoveConstructor:\t" << this << endl;
 	}
 	
 	~String()
 	{
 		delete[] this->str;
+		cout << "Destructor:\t\t" << this << endl;
 	}
-	
-	String(const String& other)
+
+	//Operators
+
+	char& operator[] (const int index) const
 	{
-		length = strlen(other.str);
-		this->str = new char[length + 1];
-
-		for (int i = 0; i < length; i++)
-		{
-			this->str[i] = other.str[i];
-		}
-
-		this->str[length] = 0;
+		return str[index];
 	}
-	
-	String& operator =(const String& other)
+
+	String& operator=(const String& other)
 	{
-		
-		length = strlen(other.str);
-		this->str = new char[length + 1];
-
-		for (int i = 0; i < length; i++)
-		{
+		if (this == &other)return *this;
+		delete[] this->str;
+		this->size = other.size;
+		this->str = new char[size] {};
+		for (int i = 0; i < size; i++)
 			this->str[i] = other.str[i];
-		}
-
-		this->str[length] = 0;
+		cout << "CopyAssignment:\t" << this << endl;
 		return *this;
 	}
-	
-	String operator+(const String& other)
+
+	String& operator=(String&& other)
 	{
-		
-		String result_str;		
+		if (this == &other) return *this;		
+		delete[] this->str;
 
-		int this_length = strlen(this->str);
-		int other_length = strlen(other.str);
+		this->size = other.size;
+		this->str = other.str;
+		other.str = nullptr;  //Указатель на ноль (NULL pointer)
+		cout << "MoveConstructor:\t" << this << endl;
 
-		result_str.length = this_length + other_length;		
-		result_str.str = new char[this_length + other_length + 1];
-		
-		int i = 0;
-		for (; i < this_length; i++)
-		{
-			result_str.str[i] = this->str[i];
-		}
-
-		for (int j = 0; j < other_length; j++, i++)
-		{
-			result_str.str[i] = other.str[j];
-		}
-
-		result_str.str[this_length + other_length] = 0;		
-		return result_str;
-	}
-	
-	void Print()
-	{
-		cout << str << endl;
+		return *this;
 	}
 
-	int Length()
+	String operator+=(const String& other)	
 	{
-		return length;
+		return *this = *this + other; //Непонятно почему нельзя вернуть просто (*this + other)
 	}
 
-	bool operator ==(const String& other)
+	// Methods
+	void print()const
 	{
-		if (this->length != other.length)
+		cout << "size:\t" << size << endl;
+		cout << "str:\t" << str << endl;
+	}
+};
+
+bool operator ==(const String& left, const String& right)
+{
+	if (left.get_size() != right.get_size())
+	{
+		return false;
+	}
+
+	for (int i = 0; i < left.get_size(); i++)
+	{
+		if (left[i] != right[i])
 		{
 			return false;
 		}
-
-		for (int i = 0; i < this->length; i++)
-		{
-			if (this->str[i] != other.str[i])
-			{
-				return false;
-			}
-		}
-		return true;
 	}
-
-	bool operator !=(const String& other)
-	{
-		return !(this->operator==(other));
-	}		
-};
-
-ostream& operator<<(ostream& os, const String& obj)
-{	
-	os << obj.get_string();
-	return os;
+	return true;
 }
 
+bool operator !=(const String& left, const String& right)
+{
+	return !(left==right);
+}
+
+bool operator<(const String& left, const String& right)
+{
+	if (left.get_size() < right.get_size())
+	{
+		return true;
+	}
+	else if (left.get_size() > right.get_size()) return false;
+
+	for (int i = 0; i < left.get_size(); i++)
+	{
+		if (left[i] < right[i])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+bool operator<=(const String& left, const String& right)
+{
+	return !(right < left);
+}
+bool operator>(const String& left, const String& right)
+{
+	return right < left;
+}
+bool operator>=(const String& left, const String& right)
+{
+	return !(left < right);
+}
+
+ostream& operator<<(ostream& os, const String& obj)
+{
+	return os << obj.get_str();	
+}
+
+String operator+(const String& left, const String& right)
+{
+	String result(left.get_size() + right.get_size()-1); //Конструктор принимает размер слова
+	for (int i = 0; i < left.get_size(); i++)
+		result.get_str()[i] = left.get_str()[i];
+	for (int i = 0; i < right.get_size(); i++)
+		result.get_str()[i+left.get_size()-1] = right.get_str()[i];
+	return result;
+}
+
+//#define CONSTRUCTORS_CHECK
+//#define ASSIGNMENT_CHECK
 
 void main()
 {
 	setlocale(LC_ALL, "");
-
-	String str("First");
-	String str1(" ");
-	String str2("string");
-
-	String result;
-	result = str + str1 + str2;	
-
-	result.Print();
-	cout << str2 << endl;
 	
-	result = str.get_string();
-	result.Print();
+#ifdef CONSTRUCTORS_CHECK
+	String str; //Default constructor
+	str.print();
 
-	str.set_string("Third");
+	String str1 = "Hello";
+	str1.print();
+	cout << "str1: " << str1 << endl;
+	String str2 = str1;
+	cout << "str2: " << str2 << endl;
 
+	str = str2;  //Copy assignment
 	cout << str << endl;
+#endif // CONSTRUCTORS_CHECK
 
-	//*(str.get_string()) = "Hi";
+#ifdef ASSIGNMENT_CHECK
+	String str1 = "Hello";
+	String str2;
+	str1 = str1;
+	cout << "str1: " << str1 << endl;
+	cout << "str2: " << str2 << endl;
+#endif // ASSIGNMENT_CHECK
 
-	*(str.get_string()) = 'B';
-	*(str.get_string()+1) = 'e';
-	*(str.get_string()+2) = 'a';
+	String str1 = "Hello";
+	String str2 = "World";
+	//cout << delimiter << endl;
+	//String str3 = str1 + str2; //Operator + будет выполнять конкатенацию (слияние, объекдинение) строк
+	//cout << delimiter << endl;
+	//cout << str3 << endl;
 
-	str.Print();
+	cout << delimiter << endl;
+	str1 += str2;
+	cout << str1;
+
+	
 }
+

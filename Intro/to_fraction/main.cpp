@@ -541,10 +541,10 @@ void main()
 
 	//Fraction E = 2.754;
 	//Fraction E = 38.40000000000000000085977835793;
-	//Fraction E = 38.394769359938;
+	Fraction E = 38.394769359938;
 	//Fraction E = 0.394769359938;
 	//Fraction E = 2.000045;
-	Fraction E = 2;
+	//Fraction E = 2;
 	cout << E << endl;
 }
 
