@@ -6,19 +6,19 @@ using namespace std;
 
 
 #ifdef COPY_ELISION
-//int n = 0;
-//
-//struct C {
-//	explicit C(int) {}
-//	C(const C&) { ++n; }  // the copy constructor has a visible side effect
-//};                      // it modifies an object with static storage duration
-//
-//int main() {
-//	C c1(42);      // direct-initialization, calls C::C(int)
-//	C c2 = C(42);  // copy-initialization, calls C::C(const C&)
-//
-//	std::cout << n << std::endl;  // prints 0 if the copy was elided, 1 otherwise
-//}
+int n = 0;
+
+struct C {
+	explicit C(int) {}
+	C(const C&) { ++n; }  // the copy constructor has a visible side effect
+};                      // it modifies an object with static storage duration
+
+int main() {
+	C c1(42);      // direct-initialization, calls C::C(int)
+	C c2 = C(42);  // copy-initialization, calls C::C(const C&)
+
+	std::cout << n << std::endl;  // prints 0 if the copy was elided, 1 otherwise
+}
 struct C {
 	C() = default;
 	C(const C&) { std::cout << "A copy was made.\n"; }
@@ -60,32 +60,32 @@ public:
 		return str;
 	}
 
-	explicit String(int size = 80)
+	explicit String(int size = 80):size(size), str(new char[size] {})
 	{
-		this->size = size;
-		this->str = new char[size] {};
+		//this->size = size;
+		//this->str = new char[size] {};
 		cout << (size == 80 ? "Default" : "Size") << "Constructor:\t" << this << endl;
 	}
-	String(const char str[])
+	String(const char str[]):String(strlen(str) + 1)
 	{
-		this->size = strlen(str) + 1;
-		this->str = new char[size]{};
+		//this->size = strlen(str) + 1;
+		//this->str = new char[size]{};//Это выполнит первый конструктор
 		for (int i = 0; str[i]; i++)
 			this->str[i] = str[i];
 		cout << "Constructor:\t\t" << this << endl;
 	}
-	String(const String& other)
+	String(const String& other):String(other.str)
 	{
-		this->size = other.size;
+		/*this->size = other.size;
 		this->str = new char[size] {};
 		for (int i = 0; i<size; i++)
-			this->str[i] = other.str[i];
+			this->str[i] = other.str[i];*/
 		cout << "CopyConstructor:\t" << this << endl;
 	}
-	String(String&& other)
+	String(String&& other):size(other.size), str(other.str)
 	{
-		this->size = other.size;
-		this->str = other.str;
+		/*this->size = other.size;
+		this->str = other.str;*/
 		other.str = nullptr;  //Указатель на ноль (NULL pointer)
 		cout << "MoveConstructor:\t" << this << endl;
 	}
@@ -210,6 +210,8 @@ String operator+(const String& left, const String& right)
 
 //#define CONSTRUCTORS_CHECK
 //#define ASSIGNMENT_CHECK
+#define OPERATOR_PLUS_CHECK
+//#define CONSTRUCTORS_COLLING
 
 void main()
 {
@@ -237,6 +239,7 @@ void main()
 	cout << "str2: " << str2 << endl;
 #endif // ASSIGNMENT_CHECK
 
+#ifdef OPERATOR_PLUS_CHECK
 	String str1 = "Hello";
 	String str2 = "World";
 	//cout << delimiter << endl;
@@ -247,7 +250,48 @@ void main()
 	cout << delimiter << endl;
 	str1 += str2;
 	cout << str1;
+#endif // OPERATOR_PLUS_CHECK
 
-	
+#ifdef CONSTRUCTORS_COLLING
+	String str; //Default constructor
+	str.print();
+	String str1(5);
+	str1.print();
+	String str2 = "Hello"; //Single-argument constructor
+	str2.print();
+	String str3("Hello"); //Single-argument constructor
+	str3.print();
+
+	String str4(); //Здесь не вызывается конструктор по умолчанию
+				   //здесь объявляется функция str4, которая ничего не принимает,
+				   //и возвращает значение тип String
+	//str4.
+	String str5; //Неявный вызов конструктора по умолчанию
+	str5.print();
+	String str6{}; //Явный вызов конструктора по умолчанию
+	str6.print();
+
+	String str7{ "Hello" };
+	String("Привет").print(); //Явный вызов конструктора для создания временного безымянного объекта
+
+	String("Привет") == str3;
+#endif // CONSTRUCTORS_COLLING
+
+
 }
+
+
+
+
+
+
+//кстати говоря, если бы написали напр.: str1 += 2;
+//и при этом конструктор String(int size = 80) не был бы explicit,
+//то этот конструктор отработал бы(в результате изменился бы размер ‘str1’ на 2 байта)???
+//Больше того – это возможно даже если конструктор explicit – если передать:
+//str1 += String(2);
+
+//в динамических массивах тоже можно скопировать указатетль, а старому присвоить nulptr?
+
+//такую же логику, как в MoveConstructor можно реализовать в CopyConstructor?
 
