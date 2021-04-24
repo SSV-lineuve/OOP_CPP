@@ -33,7 +33,7 @@ void main()
 
 #ifdef OPERATOR_PLUS_CHECK
 	String str1 = "Hello";
-	String str2 = "World";
+	String str2 = "World";	
 	//cout << delimiter << endl;
 	//String str3 = str1 + str2; //Operator + будет выполнять конкатенацию (слияние, объекдинение) строк
 	//cout << delimiter << endl;
@@ -41,7 +41,8 @@ void main()
 
 	cout << delimiter << endl;
 	str1 += str2;
-	cout << str1;
+	cout << str1 << endl;
+	cout << delimiter << endl;
 #endif // OPERATOR_PLUS_CHECK
 
 #ifdef CONSTRUCTORS_COLLING
